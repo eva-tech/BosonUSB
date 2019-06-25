@@ -408,11 +408,11 @@ int main(int argc, char** argv) {
       // Display thermal after 16-bits AGC... will display an image
       if (zoom_enable == 0) {
         sprintf(label, "%s : RAW16  Linear", thermal_sensor_name);
-        imshow(label, thermal16_linear);
+        // imshow(label, thermal16_linear);
       } else {
         resize(thermal16_linear, thermal16_linear_zoom, size);
         sprintf(label, "%s : RAW16  Linear Zoom", thermal_sensor_name);
-        imshow(label, thermal16_linear_zoom);
+        // imshow(label, thermal16_linear_zoom);
       }
 
       if (record_enable == 1) {
@@ -431,7 +431,7 @@ int main(int argc, char** argv) {
                0);  // 4:2:0 family instead of 4:2:2 ...
 
       sprintf(label, "%s : 8bits", thermal_sensor_name);
-      imshow(label, thermal_rgb);
+      //   imshow(label, thermal_rgb);
 
       if (record_enable == 1) {
         sprintf(filename, "%s_yuv_%lu.tiff", thermal_sensor_name, frame);
