@@ -202,9 +202,9 @@ int main(int argc, char** argv) {
           sprintf(thermal_sensor_name, "Boson_320");
       }
     }
-    // Look for feedback in ASCII
-    if (argv[i][0] >= '0' && argv[i][0] <= '9') {
-      sprintf(video, "/dev/video%c", argv[i][0]);
+    // Look for video interface
+    if (argv[i][0] == 'v') {
+      sprintf(video, "/dev/video%c", argv[i] + 1);
     }
     // Look for frame count
     if (argv[i][0] == 't') {
