@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
     }
     // Look for video interface
     if (argv[i][0] == 'v') {
-      sprintf(video, "/dev/video%c", argv[i] + 1);
+      sprintf(video, "/dev/video%s", argv[i] + 1);
     }
     // Look for frame count
     if (argv[i][0] == 't') {
