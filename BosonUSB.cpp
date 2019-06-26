@@ -148,8 +148,8 @@ int main(int argc, char** argv) {
   char video[20];                // To store Video Port Device
   char label[50];                // To display the information
   char thermal_sensor_name[20];  // To store the sensor name
-  char filename[60];             // PATH/File_count
-  char folder_name[30];          // To store the folder name
+  char filename[128];            // PATH/File_count
+  char folder_name[128];         // To store the folder name
   char video_frames_str[30];
   // Default Program options
   int video_mode = RAW16;
