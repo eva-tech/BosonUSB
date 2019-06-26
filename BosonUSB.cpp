@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
 
     // Look for type/size of sensor
     if (argv[i][0] == 'n') {
-      sprintf(filename, argv[i] + 1);
+      sprintf(filename, "%s", argv[i] + 1);
     }
 
     // Look for video interface
