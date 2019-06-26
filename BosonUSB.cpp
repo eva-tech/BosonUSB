@@ -40,9 +40,6 @@ agc, yuv) will be located.
 #include <unistd.h>  // close
 #include <opencv2/opencv.hpp>
 
-#define YUV 0
-#define RAW16 1
-
 using namespace cv;
 
 #define v_major 1
@@ -63,7 +60,9 @@ int width;
 int height;
 
 // Types of sensors supported
-enum sensor_types { Boson320, Boson640 };
+enum BosonSensorTypes { Boson320, Boson640 };
+// Types of video formats supported
+enum BosonVideFormats { YUV, RAW16 };
 
 /* ---------------------------- 16 bits Mode auxiliary functions
  * ---------------------------------------*/
@@ -143,6 +142,7 @@ int main(int argc, char** argv) {
   int ret;
   int fd;
   int i;
+
   struct v4l2_capability cap;
   long frame = 0;                // First frame number enumeration
   char video[20];                // To store Video Port Device
@@ -151,61 +151,74 @@ int main(int argc, char** argv) {
   char filename[128];            // PATH/File_count
   char folder_name[128];         // To store the folder name
   char video_frames_str[30];
-  // Default Program options
-  int video_mode = RAW16;
+  BosonSensorTypes boson_sensor;
+
+  /*
+   * Default Program options
+   */
+
+  int video_mode = BosonVideFormats::RAW16;
   int video_frames = 0;
   int zoom_enable = 0;
   int record_enable = 0;
-  sensor_types my_thermal = Boson320;
+  sprintf(video, "/dev/video0");  // Default to video 0
 
   // To record images
   std::vector<int> compression_params;
   compression_params.push_back(IMWRITE_PXM_BINARY);
 
-  // Display Help
-  print_help();
+  /*
+   *  Read command line arguments
+   */
 
-  // Video device by default
-  sprintf(video, "/dev/video0");
-  sprintf(thermal_sensor_name, "Boson_320");
-
-  // Read command line arguments
   for (i = 0; i < argc; i++) {
     // Check if RAW16 video is desired
-    if (argv[i][0] == 'r') {
-      video_mode = RAW16;
+    if (argv[i][0] == 'h') {
+      // Display Help
+      print_help();
     }
+
+    // Check if RAW16 video is desired
+    if (argv[i][0] == 'r') {
+      video_mode = BosonVideFormats::RAW16;
+    }
+
     // Check if AGC video is desired
     if (argv[i][0] == 'y') {
-      video_mode = YUV;
+      video_mode = BosonVideFormats::YUV;
     }
+
     // Check if ZOOM to 640x512 is enabled
     if (argv[i][0] == 'z') {
       zoom_enable = 1;
     }
+
     // Check if recording is enabled
     if (argv[i][0] == 'f') {  // File name has to be more than two chars
       record_enable = 1;
       if (strlen(argv[i]) > 2) {
         strcpy(folder_name, argv[i] + 1);
+      } else {
+        strcpy(folder_name, "boson");
       }
     }
+
     // Look for type/size of sensor
     if (argv[i][0] == 's') {
-      switch (argv[i][1]) {
-        case 'B' /* value */:
-          my_thermal = Boson640;
-          sprintf(thermal_sensor_name, "Boson_640");
-          break;
-        default:
-          my_thermal = Boson320;
-          sprintf(thermal_sensor_name, "Boson_320");
+      if (argv[i][1] == 'B') {
+        boson_sensor = BosonSensorTypes::Boson640;
+        sprintf(thermal_sensor_name, "Boson640");
+      } else {
+        boson_sensor = BosonSensorTypes::Boson320;
+        sprintf(thermal_sensor_name, "Boson320");
       }
     }
+
     // Look for video interface
     if (argv[i][0] == 'v') {
       sprintf(video, "/dev/video%s", argv[i] + 1);
     }
+
     // Look for frame count
     if (argv[i][0] == 't') {
       if (strlen(argv[i]) >= 2) {
@@ -217,11 +230,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  // Folder name
+  // Create folder where files will be saved
   if (record_enable == 1) {
-    if (strlen(folder_name) <= 1) {  // File name has to be more than two chars
-      strcpy(folder_name, thermal_sensor_name);
-    }
     mkdir(folder_name, 0700);
     chdir(folder_name);
     printf(WHT ">>> Folder " YEL "%s" WHT " selected to record files\n",
@@ -246,34 +256,28 @@ int main(int argc, char** argv) {
   }
 
   if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-    fprintf(stderr, RED
-            "The device does not handle single-planar video capture." WHT "\n");
+    perror(RED "The device does not handle single-planar video capture." WHT
+               "\n");
     exit(1);
   }
 
+  // Declare video for linux format
   struct v4l2_format format;
 
   // Two different FORMAT modes, 8 bits vs RAW16
-  if (video_mode == RAW16) {
+  if (video_mode == BosonVideFormats::RAW16) {
     printf(WHT ">>> " YEL "16 bits " WHT "capture selected\n");
 
     // I am requiring thermal 16 bits mode
     format.fmt.pix.pixelformat = V4L2_PIX_FMT_Y16;
 
     // Select the frame SIZE (will depend on the type of sensor)
-    switch (my_thermal) {
-      case Boson320:  // Boson320
-        width = 320;
-        height = 256;
-        break;
-      case Boson640:  // Boson640
-        width = 640;
-        height = 512;
-        break;
-      default:  // Boson320
-        width = 320;
-        height = 256;
-        break;
+    if (boson_sensor == BosonSensorTypes::Boson640) {  // Boson640
+      width = 640;
+      height = 512;
+    } else {  // Boson320
+      width = 320;
+      height = 256;
     }
 
   } else {  // 8- bits is always 640x512 (even for a Boson 320)
@@ -402,7 +406,7 @@ int main(int argc, char** argv) {
 
     // -----------------------------
     // RAW16 DATA
-    if (video_mode == RAW16) {
+    if (video_mode == BosonVideFormats::RAW16) {
       AGC_Basic_Linear(thermal16, thermal16_linear, height, width);
 
       // Display thermal after 16-bits AGC... will display an image
