@@ -148,8 +148,9 @@ int main(int argc, char** argv) {
   char video[20];                // To store Video Port Device
   char label[50];                // To display the information
   char thermal_sensor_name[20];  // To store the sensor name
-  char filename[128];            // PATH/File_count
-  char folder_name[128];         // To store the folder name
+  char filename[1024];           // To store file name
+  char filepath[1024];           // PATH/File_count
+  char folder_name[1024];        // To store the folder name
   char video_frames_str[30];
   BosonSensorTypes boson_sensor;
 
@@ -207,11 +208,16 @@ int main(int argc, char** argv) {
     if (argv[i][0] == 's') {
       if (argv[i][1] == 'B') {
         boson_sensor = BosonSensorTypes::Boson640;
-        sprintf(thermal_sensor_name, "Boson640");
+        // sprintf(thermal_sensor_name, "Boson640");
       } else {
         boson_sensor = BosonSensorTypes::Boson320;
-        sprintf(thermal_sensor_name, "Boson320");
+        // sprintf(thermal_sensor_name, "Boson320");
       }
+    }
+
+    // Look for type/size of sensor
+    if (argv[i][0] == 'n') {
+      sprintf(filename, argv[i] + 1);
     }
 
     // Look for video interface
@@ -375,7 +381,6 @@ int main(int argc, char** argv) {
   int luma_height;
   int luma_width;
   int color_space;
-  ;
 
   // Declarations for 8bits YCbCr mode
   // Will be used in case we are reading YUV format
@@ -420,10 +425,18 @@ int main(int argc, char** argv) {
       }
 
       if (record_enable == 1) {
-        sprintf(filename, "%s_raw16_%lu.tiff", thermal_sensor_name, frame);
-        imwrite(filename, thermal16, compression_params);
-        sprintf(filename, "%s_agc_%lu.tiff", thermal_sensor_name, frame);
-        imwrite(filename, thermal16_linear, compression_params);
+        // Don't print frame number if first frame
+        if (video_frames == 1 && frame == 0) {
+          sprintf(filepath, "%s_raw16.tiff", filename);
+          imwrite(filepath, thermal16, compression_params);
+          sprintf(filepath, "%s_agc.tiff", filename);
+          imwrite(filepath, thermal16_linear, compression_params);
+        } else {
+          sprintf(filepath, "%s_raw16_%lu.tiff", filename, frame);
+          imwrite(filepath, thermal16, compression_params);
+          sprintf(filepath, "%s_agc_%lu.tiff", filename, frame);
+          imwrite(filepath, thermal16_linear, compression_params);
+        }
         frame++;
       }
     }
@@ -438,8 +451,8 @@ int main(int argc, char** argv) {
       //   imshow(label, thermal_rgb);
 
       if (record_enable == 1) {
-        sprintf(filename, "%s_yuv_%lu.tiff", thermal_sensor_name, frame);
-        imwrite(filename, thermal_rgb, compression_params);
+        sprintf(filepath, "%s_yuv_%lu.tiff", thermal_sensor_name, frame);
+        imwrite(filepath, thermal_rgb, compression_params);
         frame++;
       }
     }
