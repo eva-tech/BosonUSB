@@ -38,6 +38,11 @@ BosonUSB [r/y/a/b/z/f/t] [0..9]
 ./BosonUSB fcap t100 -> Captures RAW16 frames and stores them as TIFF files in 'cap' folder and only captures 100 frames
 ```
 
+# Prerequisites
+```
+sudo apt install build-essential cmake libopencv-dev
+```
+
 # To compile
 
 This SW uses some libraries as v4l2 and OpenCv, they need to be installed first in the PC.
@@ -56,6 +61,11 @@ rm -rf CMakeFiles
 rm CMakeCache.txt
 rm cmake_install.cmake
 rm Makefile
+```
+
+# How to install
+```
+make install
 ```
 
 # References and Credits (other than FLIR)
