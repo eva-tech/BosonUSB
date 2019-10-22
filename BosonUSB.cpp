@@ -427,12 +427,12 @@ int main(int argc, char** argv) {
       if (record_enable == 1) {
         // Don't print frame number if first frame
         if (video_frames == 1 && frame == 0) {
-          sprintf(filepath, "%s_raw16.tiff", filename);
+          sprintf(filepath, "%s.tiff", filename);
           imwrite(filepath, thermal16, compression_params);
           sprintf(filepath, "%s_agc.tiff", filename);
           imwrite(filepath, thermal16_linear, compression_params);
         } else {
-          sprintf(filepath, "%s_raw16_%lu.tiff", filename, frame);
+          sprintf(filepath, "%s_%lu.tiff", filename, frame);
           imwrite(filepath, thermal16, compression_params);
           sprintf(filepath, "%s_agc_%lu.tiff", filename, frame);
           imwrite(filepath, thermal16_linear, compression_params);
