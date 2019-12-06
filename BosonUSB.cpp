@@ -429,8 +429,6 @@ int main(int argc, char** argv) {
         if (video_frames == 1 && frame == 0) {
           sprintf(filepath, "%s.tiff", filename);
           imwrite(filepath, thermal16, compression_params);
-          sprintf(filepath, "%s_agc.tiff", filename);
-          imwrite(filepath, thermal16_linear, compression_params);
         } else {
           sprintf(filepath, "%s_%lu.tiff", filename, frame);
           imwrite(filepath, thermal16, compression_params);
